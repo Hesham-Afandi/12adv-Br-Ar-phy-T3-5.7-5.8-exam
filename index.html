@@ -3,481 +3,477 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> فيزياء الصف الثاني عشر - القدرة الكهربية والعناصر غير الأومية</title>
+    <title>⚡ Grade 12 Advanced Physics - Electric Power, Diodes & LEDs</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Cairo', sans-serif; }
+        body.en-mode { font-family: 'Inter', sans-serif; }
         .correct { background-color: #dcfce7 !important; border-color: #16a34a !important; }
         .incorrect { background-color: #fee2e2 !important; border-color: #dc2626 !important; }
-        .formula { font-family: 'Times New Roman', serif; font-style: italic; direction: ltr; display: inline-block; }
+        .formula { font-family: 'Times New Roman', serif; letter-spacing: 0.5px; direction: ltr; display: inline-block; font-style: italic; }
         .timer-warning { color: #dc2626 !important; animation: pulse 1s infinite; }
         @keyframes pulse { 50% { opacity: 0.7; } }
         @media print { .no-print { display: none !important; } }
-        .success-badge { 
-            display: inline-block; 
-            padding: 4px 12px; 
-            border-radius: 20px; 
-            font-weight: bold;
-            font-size: 0.875rem;
-        }
+        .success-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 0.875rem; }
         .grade-excellent { background: #dcfce7; color: #166534; }
         .grade-good { background: #fef3c7; color: #92400e; }
         .grade-pass { background: #dbeafe; color: #1e40af; }
         .grade-fail { background: #fee2e2; color: #991b1b; }
+        .lang-switch {
+            position: fixed; top: 16px; left: 16px; z-index: 100;
+            background: white; padding: 6px; border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; gap: 4px;
+            border: 2px solid #4f46e5;
+        }
+        [dir="ltr"] .lang-switch { left: auto; right: 16px; }
+        .lang-btn {
+            padding: 6px 14px; border-radius: 20px; cursor: pointer; font-weight: bold;
+            transition: all 0.3s; border: none; font-size: 0.875rem;
+            background: transparent; color: #6b7280;
+        }
+        .lang-btn.active { background: #4f46e5; color: white; box-shadow: 0 2px 6px rgba(79,70,229,0.4); }
+        .lang-btn:hover:not(.active) { background: #eef2ff; color: #4f46e5; }
+        .shuffle-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 p-4 md:p-8 min-h-screen">
 
-    <!-- Timer -->
+    <div class="lang-switch no-print">
+        <button class="lang-btn active" onclick="setLanguage('ar')" id="btn-ar">عربي</button>
+        <button class="lang-btn" onclick="setLanguage('en')" id="btn-en">EN</button>
+    </div>
+
     <div id="timer-container" class="max-w-4xl mx-auto mb-4 text-center no-print">
         <div class="bg-white p-4 rounded-xl shadow-md inline-block border-2 border-indigo-100">
-            <span class="text-gray-600 ml-2">⏱️ الوقت المتبقي:</span>
+            <span class="text-gray-600 ml-2" data-ar="⏱️ الوقت المتبقي:" data-en="⏱️ Time Remaining:">⏱️ الوقت المتبقي:</span>
             <span id="timer" class="text-2xl font-bold text-indigo-600 font-mono">60:00</span>
+            <span class="shuffle-badge" data-ar="🔀 أسئلة عشوائية" data-en="🔀 Random Questions">🔀 أسئلة عشوائية</span>
         </div>
     </div>
 
-    <!-- Controls -->
     <div class="max-w-4xl mx-auto mb-6 flex flex-wrap gap-3 justify-center no-print">
-        <button onclick="toggleAnswers()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium transition shadow cursor-pointer">
-            👁️ إظهار / إخفاء الإجابات النموذجية
-        </button>
-        <button onclick="window.print()" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2 rounded-lg font-medium transition shadow cursor-pointer">
-            🖨️ طباعة / حفظ كـ PDF
-        </button>
+        <button onclick="toggleAnswers()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg font-medium transition shadow cursor-pointer" data-ar="👁️ إظهار / إخفاء الإجابات" data-en="👁️ Show / Hide Answers">👁️ إظهار / إخفاء الإجابات</button>
+        <button onclick="window.print()" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2 rounded-lg font-medium transition shadow cursor-pointer" data-ar="🖨️ طباعة / PDF" data-en="🖨️ Print / PDF">🖨️ طباعة / PDF</button>
+        <button onclick="reshuffleExam()" class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-5 py-2 rounded-lg font-medium transition shadow cursor-pointer" data-ar="🔀 إعادة خلط الأسئلة" data-en="🔀 Reshuffle Questions">🔀 إعادة خلط الأسئلة</button>
     </div>
 
-    <!-- Header -->
     <header class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-md mb-8 border-r-4 border-indigo-600">
         <div class="text-center">
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">⚡ فيزياء الصف الثاني عشر المتقدم</h1>
-            <h2 class="text-lg text-indigo-600 font-semibold">الدرس 5.7-5.8: القدرة الكهربية، نقل الطاقة، والدايود (LED)</h2>
-            <p class="text-sm text-gray-600 mt-2">Electric Power, Heat Loss, Diodes & LEDs</p>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2" data-ar="⚡ فيزياء الصف الثاني عشر المتقدم" data-en="⚡ Grade 12 Advanced Physics">⚡ فيزياء الصف الثاني عشر المتقدم</h1>
+            <h2 class="text-lg text-indigo-600 font-semibold" data-ar="القدرة الكهربية، نقل الطاقة، والدايود (LED)" data-en="Electric Power, Energy Transfer & Diodes (LED)">القدرة الكهربية، نقل الطاقة، والدايود (LED)</h2>
+            <p class="text-sm text-gray-600 mt-2" data-ar="فقد الطاقة، الجهد العالي، العناصر غير الأومية، كفاءة الإضاءة" data-en="Heat Loss, High Voltage, Non-Ohmic Devices, Lighting Efficiency">فقد الطاقة، الجهد العالي، العناصر غير الأومية، كفاءة الإضاءة</p>
+            <p class="text-xs text-orange-600 mt-2 font-semibold" data-ar="⚠️ ملاحظة: يتم خلط ترتيب الأسئلة والخيارات تلقائياً مع كل تحديث للصفحة" data-en="⚠️ Note: Questions and options are randomly shuffled on every page refresh">⚠️ ملاحظة: يتم خلط ترتيب الأسئلة والخيارات تلقائياً مع كل تحديث للصفحة</p>
         </div>
         <div class="mt-4 flex flex-wrap justify-center gap-4 text-sm text-gray-600">
-            <span>📅 التاريخ: <input type="text" class="border-b border-gray-400 bg-transparent w-28 text-center"></span>
-            <span>👤 الاسم: <input type="text" id="studentName" class="border-b border-gray-400 bg-transparent w-32 text-center" placeholder="أدخل الاسم"></span>
-            <span>⏱️ المدة: 60 دقيقة</span>
-            <span>📊 المجموع: 100 درجة</span>
+            <span><span data-ar="📅 التاريخ:" data-en="📅 Date:">📅 التاريخ:</span> <input type="text" class="border-b border-gray-400 bg-transparent w-28 text-center"></span>
+            <span><span data-ar="👤 الاسم:" data-en="👤 Name:">👤 الاسم:</span> <input type="text" id="studentName" class="border-b border-gray-400 bg-transparent w-32 text-center" placeholder="Enter name"></span>
+            <span><span data-ar="🏫 الشعبة:" data-en="🏫 Class:">🏫 الشعبة:</span> <input type="text" id="studentClass" class="border-b border-gray-400 bg-transparent w-28 text-center" placeholder="Class"></span>
+            <span><span data-ar="⏱️ المدة: 60 دقيقة" data-en="⏱️ Duration: 60 min">⏱️ المدة: 60 دقيقة</span></span>
+            <span><span data-ar="📊 المجموع: 100 درجة" data-en="📊 Total: 100 pts">📊 المجموع: 100 درجة</span></span>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto space-y-8">
+    <main class="max-w-4xl mx-auto space-y-8" id="exam-content"></main>
 
-        <!-- Section 1: Electric Power & Heat Loss -->
-        <section class="bg-white p-6 rounded-xl shadow-lg">
-            <h2 class="text-xl font-bold mb-4 text-indigo-700">🔹 الجزء الأول: القدرة الكهربية وفقد الطاقة</h2>
-            <ol id="section1-list" class="space-y-4 text-sm">
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-1">
-                    <strong>1.</strong> القانون الأساسي للقدرة الكهربية المستهلكة في أي عنصر هو:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q1" value="a" class="ml-2"> أ) P = I/R</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q1" value="b" class="ml-2"> ب) P = IV</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q1" value="c" class="ml-2"> ج) P = V/I</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q1" value="d" class="ml-2"> د) P = I²/V</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-2">
-                    <strong>2.</strong> القدرة المفقودة على شكل حرارة في أسلاك النقل تُحسب من العلاقة:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q2" value="a" class="ml-2"> أ) P_loss = I²R</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q2" value="b" class="ml-2"> ب) P_loss = V²/R</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q2" value="c" class="ml-2"> ج) P_loss = IV</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q2" value="d" class="ml-2"> د) P_loss = IR</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: أ)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-3">
-                    <strong>3.</strong> مصباح كهربائي قدرته 100W يعمل على جهد 220V. التيار المار فيه تقريباً =<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q3" value="a" class="ml-2"> أ) 0.45 A</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q3" value="b" class="ml-2"> ب) 2.2 A</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q3" value="c" class="ml-2"> ج) 22 A</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q3" value="d" class="ml-2"> د) 0.1 A</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: أ) I = P/V = 100/220 ≈ 0.45A</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-4">
-                    <strong>4.</strong> إذا تضاعف التيار المار في خط نقل الطاقة، فإن القدرة المفقودة على شكل حرارة:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q4" value="a" class="ml-2"> أ) تتضاعف مرتين</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q4" value="b" class="ml-2"> ب) تبقى ثابتة</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q4" value="c" class="ml-2"> ج) تنقص للنصف</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q4" value="d" class="ml-2"> د) تزداد 4 أضعاف</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: د) لأنها تتناسب مع مربع التيار (I²)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-5">
-                    <strong>5.</strong> يمر تيار شدته 10A في خط نقل مقاومته 2Ω. القدرة المفقودة في الخط =<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q5" value="a" class="ml-2"> أ) 20 W</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q5" value="b" class="ml-2"> ب) 50 W</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q5" value="c" class="ml-2"> ج) 200 W</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q5" value="d" class="ml-2"> د) 100 W</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ج) P = I²R = (10)² × 2 = 200W</div>
-                </li>
-            </ol>
-        </section>
+    <div class="text-center no-print pb-8 mt-8">
+        <button onclick="gradeExam()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-lg px-10 py-4 rounded-xl font-bold shadow-xl transition transform hover:scale-105 cursor-pointer" data-ar="📝 تسليم وتصحيح الامتحان" data-en="📝 Submit & Grade Exam">📝 تسليم وتصحيح الامتحان</button>
+    </div>
 
-        <!-- Section 2: High Voltage Transmission -->
-        <section class="bg-white p-6 rounded-xl shadow-lg">
-            <h2 class="text-xl font-bold mb-4 text-indigo-700">🔹 الجزء الثاني: نقل الطاقة بجهد عالي</h2>
-            <ol id="section2-list" class="space-y-4 text-sm">
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-6">
-                    <strong>6.</strong> لماذا تُنقل الطاقة الكهربائية عبر مسافات طويلة بجهد عالي جداً (مثل ±600kV)؟<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q6" value="a" class="ml-2"> أ) لتقليل التيار المار في الأسلاك وبالتالي تقليل فقد الطاقة (I²R)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q6" value="b" class="ml-2"> ب) لزيادة التيار المار في الأسلاك</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q6" value="c" class="ml-2"> ج) لزيادة المقاومة في الأسلاك</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q6" value="d" class="ml-2"> د) لتقليل الجهد عند المستهلك</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: أ)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-7">
-                    <strong>7.</strong> عند نقل القدرة الثابتة (P)، إذا رفعنا جهد النقل (V) إلى 10 أضعاف، فإن التيار (I):<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q7" value="a" class="ml-2"> أ) يزداد 10 أضعاف</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q7" value="b" class="ml-2"> ب) يبقى ثابتاً</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q7" value="c" class="ml-2"> ج) يقل إلى 1/10</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q7" value="d" class="ml-2"> د) يقل إلى 1/100</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ج) لأن I = P/V</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-8">
-                    <strong>8.</strong> في النظام السابق (سؤال 7)، كيف تتأثر القدرة المفقودة في الأسلاك؟<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q8" value="a" class="ml-2"> أ) تقل إلى 1/10</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q8" value="b" class="ml-2"> ب) تقل إلى 1/100</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q8" value="c" class="ml-2"> ج) تزداد 100 ضعف</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q8" value="d" class="ml-2"> د) تبقى ثابتة</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب) لأنها تتناسب مع I²</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-9">
-                    <strong>9.</strong> الطاقة المفقودة في خطوط النقل تتحول بشكل أساسي إلى:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q9" value="a" class="ml-2"> أ) طاقة ضوئية</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q9" value="b" class="ml-2"> ب) طاقة حرارية (Heat Loss)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q9" value="c" class="ml-2"> ج) طاقة صوتية</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q9" value="d" class="ml-2"> د) طاقة كيميائية</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-10">
-                    <strong>10.</strong> لنقل قدرة 1200kW عبر أسلاك مقاومتها 10Ω. إذا كان الجهد 120kV، فإن التيار المار =<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q10" value="a" class="ml-2"> أ) 100 A</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q10" value="b" class="ml-2"> ب) 10 A</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q10" value="c" class="ml-2"> ج) 1 A</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q10" value="d" class="ml-2"> د) 0.1 A</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب) I = P/V = 1,200,000 / 120,000 = 10A</div>
-                </li>
-            </ol>
-        </section>
-
-        <!-- Section 3: Diodes & Non-Ohmic Devices -->
-        <section class="bg-white p-6 rounded-xl shadow-lg">
-            <h2 class="text-xl font-bold mb-4 text-indigo-700">🔹 الجزء الثالث: الدايود والعناصر غير الأومية</h2>
-            <ol id="section3-list" class="space-y-4 text-sm">
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-11">
-                    <strong>11.</strong> العنصر الإلكتروني الذي يسمح بمرور التيار الكهربائي في اتجاه واحد فقط هو:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q11" value="a" class="ml-2"> أ) المقاوم الأومي</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q11" value="b" class="ml-2"> ب) الدايود (Diode)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q11" value="c" class="ml-2"> ج) المكثف</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q11" value="d" class="ml-2"> د) الملف</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-12">
-                    <strong>12.</strong> جهد الانحياز الأمامي التقريبي للدايود المصنوع من السيليكون هو:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q12" value="a" class="ml-2"> أ) 0.3 V</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q12" value="b" class="ml-2"> ب) 1.5 V</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q12" value="c" class="ml-2"> ج) 0.7 V</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q12" value="d" class="ml-2"> د) 5.0 V</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ج)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-13">
-                    <strong>13.</strong> منحنى العلاقة بين الجهد والتيار (V-I) للدايود يكون:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q13" value="a" class="ml-2"> أ) خطياً (أومياً)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q13" value="b" class="ml-2"> ب) غير خطي (Non-Ohmic)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q13" value="c" class="ml-2"> ج) أفقياً تماماً</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q13" value="d" class="ml-2"> د) دائرياً</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-14">
-                    <strong>14.</strong> عند توصيل الدايود في اتجاه الانحياز العكسي (Reverse Bias):<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q14" value="a" class="ml-2"> أ) يمر تيار كبير جداً</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q14" value="b" class="ml-2"> ب) لا يمر تيار تقريباً (يعمل كمفتاح مفتوح)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q14" value="c" class="ml-2"> ج) ينهار الدايود فوراً</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q14" value="d" class="ml-2"> د) يتحول إلى موصل فائق</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-15">
-                    <strong>15.</strong> أي من العناصر التالية يُعتبر عنصراً غير أومي (Non-Ohmic)؟<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q15" value="a" class="ml-2"> أ) سلك نحاسي عند ثبوت درجة الحرارة</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q15" value="b" class="ml-2"> ب) مقاومة كربونية ثابتة</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q15" value="c" class="ml-2"> ج) الدايود (Diode)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q15" value="d" class="ml-2"> د) موصل أومي مثالي</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ج)</div>
-                </li>
-            </ol>
-        </section>
-
-        <!-- Section 4: LEDs & Lighting Efficiency -->
-        <section class="bg-white p-6 rounded-xl shadow-lg">
-            <h2 class="text-xl font-bold mb-4 text-indigo-700">🔹 الجزء الرابع: ثنائيات LED وكفاءة الإضاءة</h2>
-            <ol id="section4-list" class="space-y-4 text-sm">
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-16">
-                    <strong>16.</strong> اختصار LED يعني:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q16" value="a" class="ml-2"> أ) Light Emitting Diode (ثنائي باعث للضوء)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q16" value="b" class="ml-2"> ب) Low Energy Device</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q16" value="c" class="ml-2"> ج) Light Electric Diode</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q16" value="d" class="ml-2"> د) Laser Emission Device</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: أ)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-17">
-                    <strong>17.</strong> وحدة قياس كفاءة الإضاءة للمصابيح هي:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q17" value="a" class="ml-2"> أ) واط (W)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q17" value="b" class="ml-2"> ب) لومن/واط (lm/W)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q17" value="c" class="ml-2"> ج) جول/ثانية</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q17" value="d" class="ml-2"> د) فولت/متر</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-18">
-                    <strong>18.</strong> أي نوع من المصابيح التالية يمتلك أعلى كفاءة إضاءة (lm/W)؟<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q18" value="a" class="ml-2"> أ) المصباح المتوهج (Incandescent)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q18" value="b" class="ml-2"> ب) المصباح الفلوري (Fluorescent)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q18" value="c" class="ml-2"> ج) مصباح LED</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q18" value="d" class="ml-2"> د) مصباح الصوديوم</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ج) (130-170 lm/W)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-19">
-                    <strong>19.</strong> المصباح المتوهج التقليدي يحوّل معظم الطاقة الكهربائية المستهلكة (حوالي 90%) إلى:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q19" value="a" class="ml-2"> أ) ضوء مرئي</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q19" value="b" class="ml-2"> ب) طاقة حرارية (Heat Loss)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q19" value="c" class="ml-2"> ج) طاقة صوتية</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q19" value="d" class="ml-2"> د) طاقة كيميائية</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-20">
-                    <strong>20.</strong> مصباح LED يحوّل حوالي 90% من الطاقة الكهربائية إلى ضوء. ما هي نسبة الطاقة المفقودة كحرارة؟<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q20" value="a" class="ml-2"> أ) 90%</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q20" value="b" class="ml-2"> ب) 50%</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q20" value="c" class="ml-2"> ج) 10%</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q20" value="d" class="ml-2"> د) 0%</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ج)</div>
-                </li>
-            </ol>
-        </section>
-
-        <!-- Submit Button -->
-        <div class="text-center no-print pb-8">
-            <button onclick="gradeExam()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-lg px-10 py-4 rounded-xl font-bold shadow-xl transition transform hover:scale-105 cursor-pointer">
-                📝 تسليم وتصحيح الامتحان
-            </button>
-        </div>
-    </main>
-
-    <!-- Results Panel -->
     <div id="results-panel" class="max-w-4xl mx-auto mt-8 bg-white p-8 rounded-2xl shadow-2xl border-t-4 border-emerald-500 hidden no-print">
-        <h2 class="text-3xl font-bold text-gray-900 mb-6 text-center">📊 نتائج الامتحان</h2>
+        <h2 class="text-3xl font-bold text-gray-900 mb-6 text-center" data-ar="📊 نتائج الامتحان" data-en="📊 Exam Results">📊 نتائج الامتحان</h2>
         <div class="grid md:grid-cols-3 gap-4 mb-6">
-            <div class="bg-blue-50 p-4 rounded-xl text-center"><p>اسم الطالب</p><p id="res-name" class="font-bold text-xl text-indigo-700">-</p></div>
-            <div class="bg-purple-50 p-4 rounded-xl text-center"><p>التاريخ</p><p id="res-date" class="font-bold text-xl text-purple-700">-</p></div>
-            <div class="bg-emerald-50 p-4 rounded-xl text-center"><p>المجموع</p><p id="res-total" class="font-bold text-3xl text-emerald-600">0 / 100</p></div>
+            <div class="bg-blue-50 p-4 rounded-xl text-center"><p data-ar="اسم الطالب" data-en="Student Name">اسم الطالب</p><p id="res-name" class="font-bold text-xl text-indigo-700">-</p></div>
+            <div class="bg-purple-50 p-4 rounded-xl text-center"><p data-ar="التاريخ" data-en="Date">التاريخ</p><p id="res-date" class="font-bold text-xl text-purple-700">-</p></div>
+            <div class="bg-emerald-50 p-4 rounded-xl text-center"><p data-ar="المجموع" data-en="Score">المجموع</p><p id="res-total" class="font-bold text-3xl text-emerald-600">0 / 100</p></div>
         </div>
-
-        <!-- Success Rate Badge -->
         <div class="text-center mb-6">
-            <span id="success-badge" class="success-badge grade-excellent">ممتاز - 100%</span>
+            <span id="success-badge" class="success-badge grade-excellent">-</span>
             <p id="success-percent" class="text-4xl font-bold text-emerald-600 mt-2">100%</p>
-            <p class="text-sm text-gray-500">نسبة النجاح</p>
+            <p class="text-sm text-gray-500" data-ar="نسبة النجاح" data-en="Success Rate">نسبة النجاح</p>
         </div>
-
-        <!-- Performance Breakdown -->
         <div class="bg-gray-50 p-6 rounded-xl mb-6">
-            <h3 class="font-bold text-lg mb-4 text-gray-800">📈 تفصيل الأداء حسب القسم:</h3>
+            <h3 class="font-bold text-lg mb-4 text-gray-800" data-ar="📈 تفصيل الأداء حسب القسم:" data-en="📈 Performance Breakdown:">📈 تفصيل الأداء حسب القسم:</h3>
             <div class="space-y-3">
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-700">القدرة الكهربية وفقد الطاقة</span>
-                    <span id="sec1-score" class="font-bold text-indigo-600">0/5</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-700">نقل الطاقة بجهد عالي</span>
-                    <span id="sec2-score" class="font-bold text-indigo-600">0/5</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-700">الدايود والعناصر غير الأومية</span>
-                    <span id="sec3-score" class="font-bold text-indigo-600">0/5</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-700">ثنائيات LED وكفاءة الإضاءة</span>
-                    <span id="sec4-score" class="font-bold text-indigo-600">0/5</span>
-                </div>
+                <div class="flex justify-between items-center"><span class="text-gray-700" data-ar="القدرة الكهربية الأساسية" data-en="Basic Electric Power">القدرة الكهربية الأساسية</span><span id="sec1-score" class="font-bold text-indigo-600">0/4</span></div>
+                <div class="flex justify-between items-center"><span class="text-gray-700" data-ar="فقد الطاقة ونقل الجهد العالي" data-en="Heat Loss & High Voltage">فقد الطاقة ونقل الجهد العالي</span><span id="sec2-score" class="font-bold text-indigo-600">0/4</span></div>
+                <div class="flex justify-between items-center"><span class="text-gray-700" data-ar="الدايود والعناصر غير الأومية" data-en="Diodes & Non-Ohmic Devices">الدايود والعناصر غير الأومية</span><span id="sec3-score" class="font-bold text-indigo-600">0/4</span></div>
+                <div class="flex justify-between items-center"><span class="text-gray-700" data-ar="ثنائيات LED وكفاءة الإضاءة" data-en="LEDs & Lighting Efficiency">ثنائيات LED وكفاءة الإضاءة</span><span id="sec4-score" class="font-bold text-indigo-600">0/4</span></div>
+                <div class="flex justify-between items-center"><span class="text-gray-700" data-ar="مسائل تطبيقية شاملة" data-en="Comprehensive Applications">مسائل تطبيقية شاملة</span><span id="sec5-score" class="font-bold text-indigo-600">0/4</span></div>
             </div>
         </div>
-
-        <!-- Email Send Button -->
         <div class="text-center mb-6">
-            <button id="sendEmailBtn" onclick="sendResultsToEmail()" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-lg px-8 py-3 rounded-xl font-bold shadow-xl transition transform hover:scale-105 cursor-pointer">
-                📧 إرسال النتائج للمعلم
-            </button>
+            <button id="sendEmailBtn" onclick="sendResultsToEmail()" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-lg px-8 py-3 rounded-xl font-bold shadow-xl transition transform hover:scale-105 cursor-pointer" data-ar="📧 إرسال النتائج للمعلم" data-en="📧 Send Results to Teacher">📧 إرسال النتائج للمعلم</button>
             <p id="emailStatus" class="text-sm mt-2 text-center font-medium"></p>
         </div>
-
         <div class="flex gap-3 justify-center">
-            <button onclick="window.print()" class="bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold">🖨️ طباعة النتائج</button>
+            <button onclick="window.print()" class="bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold" data-ar="🖨️ طباعة النتائج" data-en="🖨️ Print Results">🖨️ طباعة النتائج</button>
         </div>
     </div>
 
     <footer class="max-w-4xl mx-auto mt-10 mb-8 text-center text-gray-500 text-sm no-print">
-        © الفيزياء للصف الثاني عشر المتقدم | الدرس 5.7-5.8: القدرة والدايود | Mr. Mohammed Hesham
+        © <span data-ar="الفيزياء للصف 12 متقدم | القدرة والدايود" data-en="Grade 12 Advanced Physics | Power & Diodes">الفيزياء للصف 12 متقدم | القدرة والدايود</span> | Mr. Mohammed Hesham
     </footer>
 
-    <script>
-        // EmailJS Configuration
-        const PUBLIC_KEY = "Rb3Lq8tXaFmc5YHUH";
-        const SERVICE_ID = "service_w15m64i";
-        const TEMPLATE_ID = "template_5b0u2tq";
-        const TARGET_EMAIL = "mohammedhesham872@gmail.com";
-
-        (function(){ emailjs.init(PUBLIC_KEY); })();
-
-        // Timer
-        let timeRemaining = 3600;
-        let timerInterval;
-
-        function startTimer() {
-            document.getElementById('timer-container').style.display = 'block';
-            timerInterval = setInterval(() => {
-                timeRemaining--;
-                const minutes = Math.floor(timeRemaining / 60);
-                const seconds = timeRemaining % 60;
-                const timerEl = document.getElementById('timer');
-                timerEl.textContent = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
-                
-                if (timeRemaining <= 300) timerEl.classList.add('timer-warning');
-                if (timeRemaining <= 0) {
-                    clearInterval(timerInterval);
-                    alert("انتهى الوقت! سيتم تسليم الامتحان تلقائياً.");
-                    gradeExam();
-                }
-            }, 1000);
+<script>
+const originalExamData = {
+    sections: [
+        {
+            id: 'sec1',
+            title: { ar: '🔹 الجزء الأول: القدرة الكهربية الأساسية', en: '🔹 Part 1: Basic Electric Power' },
+            questions: [
+                { q: { ar: 'القانون الأساسي للقدرة الكهربية المستهلكة في أي عنصر هو:', en: 'The fundamental law for electric power consumed in any element is:' }, options: [{ ar: '<span class="formula">P = I/R</span>', en: '<span class="formula">P = I/R</span>' }, { ar: '<span class="formula">P = IV</span>', en: '<span class="formula">P = IV</span>' }, { ar: '<span class="formula">P = V/I</span>', en: '<span class="formula">P = V/I</span>' }, { ar: '<span class="formula">P = I²/V</span>', en: '<span class="formula">P = I²/V</span>' }], correct: 1, answer: { ar: 'P = IV (القدرة = التيار × الجهد)', en: 'P = IV (Power = Current × Voltage)' } },
+                { q: { ar: 'مصباح كهربائي قدرته <span class="formula">100 W</span> يعمل على جهد <span class="formula">220 V</span>. التيار المار فيه تقريباً =', en: 'A 100 W light bulb operates at 220 V. The current flowing through it is approximately:' }, options: [{ ar: '<span class="formula">0.45 A</span>', en: '<span class="formula">0.45 A</span>' }, { ar: '<span class="formula">2.2 A</span>', en: '<span class="formula">2.2 A</span>' }, { ar: '<span class="formula">22 A</span>', en: '<span class="formula">22 A</span>' }, { ar: '<span class="formula">0.1 A</span>', en: '<span class="formula">0.1 A</span>' }], correct: 0, answer: { ar: '<span class="formula">I = P/V = 100/220 ≈ 0.45 A</span>', en: '<span class="formula">I = P/V = 100/220 ≈ 0.45 A</span>' } },
+                { q: { ar: 'القدرة المفقودة على شكل حرارة في أسلاك النقل تُحسب من العلاقة:', en: 'Power lost as heat in transmission wires is calculated from:' }, options: [{ ar: '<span class="formula">P_loss = I²R</span>', en: '<span class="formula">P_loss = I²R</span>' }, { ar: '<span class="formula">P_loss = V²/R</span>', en: '<span class="formula">P_loss = V²/R</span>' }, { ar: '<span class="formula">P_loss = IV</span>', en: '<span class="formula">P_loss = IV</span>' }, { ar: '<span class="formula">P_loss = IR</span>', en: '<span class="formula">P_loss = IR</span>' }], correct: 0, answer: { ar: 'فقد الطاقة في المقاومة = <span class="formula">I²R</span>', en: 'Power loss in resistance = <span class="formula">I²R</span>' } },
+                { q: { ar: 'يمر تيار شدته <span class="formula">10 A</span> في خط نقل مقاومته <span class="formula">2 Ω</span>. القدرة المفقودة في الخط =', en: 'A current of 10 A flows through a transmission line with resistance 2 Ω. Power lost in the line =' }, options: [{ ar: '<span class="formula">20 W</span>', en: '<span class="formula">20 W</span>' }, { ar: '<span class="formula">50 W</span>', en: '<span class="formula">50 W</span>' }, { ar: '<span class="formula">200 W</span>', en: '<span class="formula">200 W</span>' }, { ar: '<span class="formula">100 W</span>', en: '<span class="formula">100 W</span>' }], correct: 2, answer: { ar: '<span class="formula">P = I²R = (10)² × 2 = 200 W</span>', en: '<span class="formula">P = I²R = (10)² × 2 = 200 W</span>' } }
+            ]
+        },
+        {
+            id: 'sec2',
+            title: { ar: '🔹 الجزء الثاني: فقد الطاقة ونقل الجهد العالي', en: '🔹 Part 2: Heat Loss & High Voltage Transmission' },
+            questions: [
+                { q: { ar: 'لماذا تُنقل الطاقة الكهربائية عبر مسافات طويلة بجهد عالي جداً (مثل ±600 kV)؟', en: 'Why is electrical energy transmitted over long distances at very high voltage (e.g., ±600 kV)?' }, options: [{ ar: 'لتقليل التيار المار في الأسلاك وبالتالي تقليل فقد الطاقة <span class="formula">(I²R)</span>', en: 'To reduce current in wires and thus reduce energy loss <span class="formula">(I²R)</span>' }, { ar: 'لزيادة التيار المار في الأسلاك', en: 'To increase current in wires' }, { ar: 'لزيادة المقاومة في الأسلاك', en: 'To increase resistance in wires' }, { ar: 'لتقليل الجهد عند المستهلك', en: 'To reduce voltage at consumer' }], correct: 0, answer: { ar: 'جهد عالي → تيار منخفض → فقد طاقة أقل (<span class="formula">P_loss = I²R</span>)', en: 'High voltage → Low current → Less power loss (<span class="formula">P_loss = I²R</span>)' } },
+                { q: { ar: 'عند نقل القدرة الثابتة <span class="formula">(P)</span>، إذا رفعنا جهد النقل <span class="formula">(V)</span> إلى 10 أضعاف، فإن التيار <span class="formula">(I)</span>:', en: 'When transmitting constant power <span class="formula">(P)</span>, if transmission voltage <span class="formula">(V)</span> is raised 10 times, current <span class="formula">(I)</span>:' }, options: [{ ar: 'يزداد 10 أضعاف', en: 'Increases 10 times' }, { ar: 'يبقى ثابتاً', en: 'Remains constant' }, { ar: 'يقل إلى <span class="formula">1/10</span>', en: 'Decreases to <span class="formula">1/10</span>' }, { ar: 'يقل إلى <span class="formula">1/100</span>', en: 'Decreases to <span class="formula">1/100</span>' }], correct: 2, answer: { ar: 'لأن <span class="formula">I = P/V</span> (علاقة عكسية)', en: 'Because <span class="formula">I = P/V</span> (inverse relationship)' } },
+                { q: { ar: 'في النظام السابق (سؤال 7)، كيف تتأثر القدرة المفقودة في الأسلاك؟', en: 'In the previous system (question 7), how is power lost in wires affected?' }, options: [{ ar: 'تقل إلى <span class="formula">1/10</span>', en: 'Decreases to <span class="formula">1/10</span>' }, { ar: 'تقل إلى <span class="formula">1/100</span>', en: 'Decreases to <span class="formula">1/100</span>' }, { ar: 'تزداد 100 ضعف', en: 'Increases 100 times' }, { ar: 'تبقى ثابتة', en: 'Remains constant' }], correct: 1, answer: { ar: 'لأنها تتناسب مع <span class="formula">I²</span>، فتقل إلى <span class="formula">(1/10)² = 1/100</span>', en: 'Because it\'s proportional to <span class="formula">I²</span>, decreases to <span class="formula">(1/10)² = 1/100</span>' } },
+                { q: { ar: 'الطاقة المفقودة في خطوط النقل تتحول بشكل أساسي إلى:', en: 'Energy lost in transmission lines is primarily converted to:' }, options: [{ ar: 'طاقة ضوئية', en: 'Light energy' }, { ar: 'طاقة حرارية (Heat Loss)', en: 'Heat energy (Heat Loss)' }, { ar: 'طاقة صوتية', en: 'Sound energy' }, { ar: 'طاقة كيميائية', en: 'Chemical energy' }], correct: 1, answer: { ar: 'فقد الطاقة في المقاومة يتحول إلى حرارة بسبب تصادم الإلكترونات', en: 'Power loss in resistance converts to heat due to electron collisions' } }
+            ]
+        },
+        {
+            id: 'sec3',
+            title: { ar: '🔹 الجزء الثالث: الدايود والعناصر غير الأومية', en: '🔹 Part 3: Diodes & Non-Ohmic Devices' },
+            questions: [
+                { q: { ar: 'العنصر الإلكتروني الذي يسمح بمرور التيار الكهربائي في اتجاه واحد فقط هو:', en: 'The electronic component that allows electric current to flow in one direction only is:' }, options: [{ ar: 'المقاوم الأومي', en: 'Ohmic resistor' }, { ar: 'الدايود (Diode)', en: 'Diode' }, { ar: 'المكثف', en: 'Capacitor' }, { ar: 'الملف', en: 'Inductor' }], correct: 1, answer: { ar: 'الدايود يسمح بمرور التيار في اتجاه واحد فقط (مثل الصمام)', en: 'Diode allows current in one direction only (like a valve)' } },
+                { q: { ar: 'جهد الانحياز الأمامي التقريبي للدايود المصنوع من السيليكون هو:', en: 'The approximate forward bias voltage of a silicon diode is:' }, options: [{ ar: '<span class="formula">0.3 V</span>', en: '<span class="formula">0.3 V</span>' }, { ar: '<span class="formula">1.5 V</span>', en: '<span class="formula">1.5 V</span>' }, { ar: '<span class="formula">0.7 V</span>', en: '<span class="formula">0.7 V</span>' }, { ar: '<span class="formula">5.0 V</span>', en: '<span class="formula">5.0 V</span>' }], correct: 2, answer: { ar: 'الدايود السيليكوني يحتاج <span class="formula">≈ 0.7 V</span> لبدء التوصيل', en: 'Silicon diode needs <span class="formula">≈ 0.7 V</span> to start conducting' } },
+                { q: { ar: 'منحنى العلاقة بين الجهد والتيار <span class="formula">(V-I)</span> للدايود يكون:', en: 'The voltage-current <span class="formula">(V-I)</span> characteristic curve of a diode is:' }, options: [{ ar: 'خطياً (أومياً)', en: 'Linear (Ohmic)' }, { ar: 'غير خطي (Non-Ohmic)', en: 'Non-linear (Non-Ohmic)' }, { ar: 'أفقياً تماماً', en: 'Completely horizontal' }, { ar: 'دائرياً', en: 'Circular' }], correct: 1, answer: { ar: 'الدايود عنصر غير أومي (منحنى V-I غير خطي)', en: 'Diode is non-Ohmic (non-linear V-I curve)' } },
+                { q: { ar: 'عند توصيل الدايود في اتجاه الانحياز العكسي (Reverse Bias):', en: 'When a diode is connected in reverse bias:' }, options: [{ ar: 'يمر تيار كبير جداً', en: 'Very large current flows' }, { ar: 'لا يمر تيار تقريباً (يعمل كمفتاح مفتوح)', en: 'Almost no current flows (acts as open switch)' }, { ar: 'ينهار الدايود فوراً', en: 'Diode breaks down immediately' }, { ar: 'يتحول إلى موصل فائق', en: 'Becomes a superconductor' }], correct: 1, answer: { ar: 'في الانحياز العكسي: الدايود يمنع مرور التيار (مقاومة عالية جداً)', en: 'In reverse bias: diode blocks current (very high resistance)' } }
+            ]
+        },
+        {
+            id: 'sec4',
+            title: { ar: '🔹 الجزء الرابع: ثنائيات LED وكفاءة الإضاءة', en: '🔹 Part 4: LEDs & Lighting Efficiency' },
+            questions: [
+                { q: { ar: 'اختصار <span class="formula">LED</span> يعني:', en: 'The abbreviation <span class="formula">LED</span> stands for:' }, options: [{ ar: 'Light Emitting Diode (ثنائي باعث للضوء)', en: 'Light Emitting Diode' }, { ar: 'Low Energy Device', en: 'Low Energy Device' }, { ar: 'Light Electric Diode', en: 'Light Electric Diode' }, { ar: 'Laser Emission Device', en: 'Laser Emission Device' }], correct: 0, answer: { ar: '<span class="formula">LED = Light Emitting Diode</span> (ثنائي باعث للضوء)', en: '<span class="formula">LED = Light Emitting Diode</span>' } },
+                { q: { ar: 'وحدة قياس كفاءة الإضاءة للمصابيح هي:', en: 'The unit of measurement for lighting efficiency of lamps is:' }, options: [{ ar: 'واط <span class="formula">(W)</span>', en: 'Watt <span class="formula">(W)</span>' }, { ar: 'لومن/واط <span class="formula">(lm/W)</span>', en: 'Lumen/Watt <span class="formula">(lm/W)</span>' }, { ar: 'جول/ثانية', en: 'Joule/second' }, { ar: 'فولت/متر', en: 'Volt/meter' }], correct: 1, answer: { ar: 'الكفاءة = الضوء الناتج (لومن) / الطاقة المستهلكة (واط)', en: 'Efficiency = Light output (lumens) / Power input (watts)' } },
+                { q: { ar: 'أي نوع من المصابيح التالية يمتلك أعلى كفاءة إضاءة <span class="formula">(lm/W)</span>؟', en: 'Which type of lamp below has the highest lighting efficiency <span class="formula">(lm/W)</span>?' }, options: [{ ar: 'المصباح المتوهج (Incandescent)', en: 'Incandescent bulb' }, { ar: 'المصباح الفلوري (Fluorescent)', en: 'Fluorescent lamp' }, { ar: 'مصباح LED', en: 'LED lamp' }, { ar: 'مصباح الصوديوم', en: 'Sodium lamp' }], correct: 2, answer: { ar: '<span class="formula">LED</span>: <span class="formula">130-170 lm/W</span> (الأعلى كفاءة)', en: '<span class="formula">LED</span>: <span class="formula">130-170 lm/W</span> (highest efficiency)' } },
+                { q: { ar: 'المصباح المتوهج التقليدي يحوّل معظم الطاقة الكهربائية المستهلكة (حوالي 90%) إلى:', en: 'A traditional incandescent bulb converts most consumed electrical energy (about 90%) to:' }, options: [{ ar: 'ضوء مرئي', en: 'Visible light' }, { ar: 'طاقة حرارية (Heat Loss)', en: 'Heat energy (Heat Loss)' }, { ar: 'طاقة صوتية', en: 'Sound energy' }, { ar: 'طاقة كيميائية', en: 'Chemical energy' }], correct: 1, answer: { ar: 'المصباح المتوهج يحوّل 90% إلى حرارة و10% فقط إلى ضوء', en: 'Incandescent bulb converts 90% to heat and only 10% to light' } }
+            ]
+        },
+        {
+            id: 'sec5',
+            title: { ar: '🔹 الجزء الخامس: مسائل تطبيقية شاملة', en: '🔹 Part 5: Comprehensive Applications' },
+            questions: [
+                { q: { ar: 'إذا تضاعف التيار المار في خط نقل الطاقة، فإن القدرة المفقودة على شكل حرارة:', en: 'If current in a transmission line is doubled, power lost as heat:' }, options: [{ ar: 'تتضاعف مرتين', en: 'Doubles' }, { ar: 'تبقى ثابتة', en: 'Remains constant' }, { ar: 'تنقص للنصف', en: 'Halves' }, { ar: 'تزداد 4 أضعاف', en: 'Increases 4 times' }], correct: 3, answer: { ar: 'لأنها تتناسب مع مربع التيار: <span class="formula">P = I²R</span> → <span class="formula">(2I)² = 4I²</span>', en: 'Because proportional to current squared: <span class="formula">P = I²R</span> → <span class="formula">(2I)² = 4I²</span>' } },
+                { q: { ar: 'مصباح <span class="formula">LED</span> يحوّل حوالي 90% من الطاقة الكهربائية إلى ضوء. ما هي نسبة الطاقة المفقودة كحرارة؟', en: 'An <span class="formula">LED</span> lamp converts about 90% of electrical energy to light. What percentage of energy is lost as heat?' }, options: [{ ar: '<span class="formula">90%</span>', en: '<span class="formula">90%</span>' }, { ar: '<span class="formula">50%</span>', en: '<span class="formula">50%</span>' }, { ar: '<span class="formula">10%</span>', en: '<span class="formula">10%</span>' }, { ar: '<span class="formula">0%</span>', en: '<span class="formula">0%</span>' }], correct: 2, answer: { ar: 'إذا حوّل 90% إلى ضوء، فالمتبقي = <span class="formula">100% - 90% = 10%</span> حرارة', en: 'If 90% converted to light, remaining = <span class="formula">100% - 90% = 10%</span> heat' } },
+                { q: { ar: 'لنقل قدرة <span class="formula">1200 kW</span> عبر أسلاك مقاومتها <span class="formula">10 Ω</span>. إذا كان الجهد <span class="formula">120 kV</span>، فإن التيار المار =', en: 'To transmit <span class="formula">1200 kW</span> through wires of resistance <span class="formula">10 Ω</span>. If voltage is <span class="formula">120 kV</span>, current =' }, options: [{ ar: '<span class="formula">100 A</span>', en: '<span class="formula">100 A</span>' }, { ar: '<span class="formula">10 A</span>', en: '<span class="formula">10 A</span>' }, { ar: '<span class="formula">1 A</span>', en: '<span class="formula">1 A</span>' }, { ar: '<span class="formula">0.1 A</span>', en: '<span class="formula">0.1 A</span>' }], correct: 1, answer: { ar: '<span class="formula">I = P/V = 1,200,000 / 120,000 = 10 A</span>', en: '<span class="formula">I = P/V = 1,200,000 / 120,000 = 10 A</span>' } },
+                { q: { ar: 'أي من العناصر التالية يُعتبر عنصراً غير أومي <span class="formula">(Non-Ohmic)</span>؟', en: 'Which of the following is considered a <span class="formula">Non-Ohmic</span> device?' }, options: [{ ar: 'سلك نحاسي عند ثبوت درجة الحرارة', en: 'Copper wire at constant temperature' }, { ar: 'مقاومة كربونية ثابتة', en: 'Fixed carbon resistor' }, { ar: 'الدايود (Diode)', en: 'Diode' }, { ar: 'موصل أومي مثالي', en: 'Ideal ohmic conductor' }], correct: 2, answer: { ar: 'الدايود لا يخضع لقانون أوم (منحنى V-I غير خطي)', en: 'Diode doesn\'t obey Ohm\'s Law (non-linear V-I curve)' } }
+            ]
         }
+    ]
+};
 
-        function toggleAnswers() {
-            document.querySelectorAll('.answer-box').forEach(el => el.classList.toggle('hidden'));
+function shuffleArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+let examData;
+let correctAnswersMap = {};
+
+function prepareShuffledExam() {
+    examData = JSON.parse(JSON.stringify(originalExamData));
+    correctAnswersMap = {};
+    let globalIdx = 1;
+    examData.sections.forEach((section) => {
+        section.questions = shuffleArray(section.questions);
+        section.questions.forEach((q) => {
+            const optionsWithCorrect = q.options.map((opt, idx) => ({
+                option: opt,
+                isCorrect: idx === q.correct
+            }));
+            const shuffledOptions = shuffleArray(optionsWithCorrect);
+            q.options = shuffledOptions.map(o => o.option);
+            const newCorrectIndex = shuffledOptions.findIndex(o => o.isCorrect);
+            q.correct = newCorrectIndex;
+            correctAnswersMap[globalIdx] = String.fromCharCode(97 + newCorrectIndex);
+            globalIdx++;
+        });
+    });
+    console.log('✅ تم خلط الأسئلة والخيارات بنجاح');
+}
+
+function reshuffleExam() {
+    prepareShuffledExam();
+    renderExam();
+    document.querySelectorAll('input[type="radio"]:checked').forEach(r => r.checked = false);
+    document.getElementById('results-panel').classList.add('hidden');
+    document.querySelectorAll('.correct, .incorrect').forEach(el => {
+        el.classList.remove('correct', 'incorrect');
+    });
+    alert(currentLang === 'ar' ? '🔀 تم إعادة خلط الأسئلة والخيارات بنجاح!' : '🔀 Questions and options have been reshuffled successfully!');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+let currentLang = 'ar';
+let timeRemaining = 3600;
+let timerInterval;
+
+function setLanguage(lang) {
+    currentLang = lang;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.getElementById('btn-ar').classList.toggle('active', lang === 'ar');
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    document.body.classList.toggle('en-mode', lang === 'en');
+    document.querySelectorAll('[data-ar][data-en]').forEach(el => {
+        el.textContent = el.getAttribute(`data-${lang}`);
+    });
+    renderExam();
+}
+
+function renderExam() {
+    const container = document.getElementById('exam-content');
+    const labels = {
+        ar: { option: ['أ', 'ب', 'ج', 'د'], answer: '✅ الإجابة:' },
+        en: { option: ['A', 'B', 'C', 'D'], answer: '✅ Answer:' }
+    };
+    const lbl = labels[currentLang];
+    const isRTL = currentLang === 'ar';
+    let html = '';
+    let globalIdx = 1;
+    examData.sections.forEach((section) => {
+        html += `<section class="bg-white p-6 rounded-xl shadow-lg">
+            <h2 class="text-xl font-bold mb-4 text-indigo-700">${section.title[currentLang]}</h2>
+            <ol class="space-y-4 text-sm">`;
+        section.questions.forEach((q) => {
+            const borderSide = isRTL ? 'border-r-4 pr-4' : 'border-l-4 pl-4';
+            html += `<li class="${borderSide} border-indigo-500 py-2" id="q-${globalIdx}">
+                <strong>${globalIdx}.</strong> ${q.q[currentLang]}<br>`;
+            q.options.forEach((opt, oIdx) => {
+                const radioSide = isRTL ? 'mr-4 ml-2' : 'ml-4 mr-2';
+                html += `<label class="cursor-pointer block mt-1 ${isRTL ? 'mr-4' : 'ml-4'}">
+                    <input type="radio" name="q${globalIdx}" value="${String.fromCharCode(97 + oIdx)}" class="${radioSide}">
+                    ${lbl.option[oIdx]}) ${opt[currentLang]}
+                </label>`;
+            });
+            html += `<div class="answer-box text-green-700 mt-2 font-medium hidden">
+                ${lbl.answer} ${lbl.option[q.correct]}) ${q.options[q.correct][currentLang]} — ${q.answer[currentLang]}
+            </div></li>`;
+            globalIdx++;
+        });
+        html += `</ol></section>`;
+    });
+    container.innerHTML = html;
+}
+
+function startTimer() {
+    document.getElementById('timer-container').style.display = 'block';
+    timerInterval = setInterval(() => {
+        timeRemaining--;
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        const timerEl = document.getElementById('timer');
+        timerEl.textContent = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+        if (timeRemaining <= 300) timerEl.classList.add('timer-warning');
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            alert(currentLang === 'ar' ? "انتهى الوقت! سيتم تسليم الامتحان تلقائياً." : "Time's up!");
+            gradeExam();
         }
+    }, 1000);
+}
 
-        function gradeExam() {
-            let correctCount = 0;
-            const correctAnswers = [
-                'b','a','a','d','c',  // Q1-5: القدرة وفقد الطاقة
-                'a','c','b','b','b',  // Q6-10: نقل الطاقة
-                'b','c','b','b','c',  // Q11-15: الدايود
-                'a','b','c','b','c'   // Q16-20: LED
-            ];
+function toggleAnswers() {
+    document.querySelectorAll('.answer-box').forEach(el => el.classList.toggle('hidden'));
+}
 
-            let sec1 = 0, sec2 = 0, sec3 = 0, sec4 = 0;
-
-            for(let i=1; i<=20; i++){
-                const selected = document.querySelector(`input[name="q${i}"]:checked`);
-                const li = document.getElementById(`q-${i}`);
-                const isCorrect = selected && selected.value === correctAnswers[i-1];
-                
-                if (isCorrect) {
-                    correctCount++;
-                    li.classList.add('correct');
-                    li.classList.remove('incorrect');
-                    
-                    if (i <= 5) sec1++;
-                    else if (i <= 10) sec2++;
-                    else if (i <= 15) sec3++;
-                    else sec4++;
-                } else {
-                    li.classList.add('incorrect');
-                    li.classList.remove('correct');
-                }
-            }
-
-            const score = (correctCount / 20) * 100;
-            const successRate = Math.round(score);
-            
-            document.getElementById('res-total').textContent = `${Math.round(score)} / 100`;
-            document.getElementById('res-name').textContent = document.getElementById('studentName').value || 'طالب';
-            document.getElementById('res-date').textContent = new Date().toLocaleDateString('ar-AE');
-            
-            document.getElementById('sec1-score').textContent = `${sec1}/5`;
-            document.getElementById('sec2-score').textContent = `${sec2}/5`;
-            document.getElementById('sec3-score').textContent = `${sec3}/5`;
-            document.getElementById('sec4-score').textContent = `${sec4}/5`;
-            
-            const badge = document.getElementById('success-badge');
-            const percent = document.getElementById('success-percent');
-            percent.textContent = `${successRate}%`;
-            
-            if(successRate >= 90) {
-                badge.textContent = 'ممتاز';
-                badge.className = 'success-badge grade-excellent';
-            } else if(successRate >= 75) {
-                badge.textContent = 'جيد جداً';
-                badge.className = 'success-badge grade-good';
-            } else if(successRate >= 50) {
-                badge.textContent = 'جيد';
-                badge.className = 'success-badge grade-pass';
-            } else {
-                badge.textContent = 'يحتاج تحسين';
-                badge.className = 'success-badge grade-fail';
-            }
-            
-            document.getElementById('results-panel').classList.remove('hidden');
-            document.getElementById('results-panel').scrollIntoView({ behavior: 'smooth' });
-            document.getElementById('sendEmailBtn').classList.remove('hidden');
+function gradeExam() {
+    let correctCount = 0;
+    let sec1=0, sec2=0, sec3=0, sec4=0, sec5=0;
+    for (let i = 1; i <= 20; i++) {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        const li = document.getElementById(`q-${i}`);
+        const correctAnswer = correctAnswersMap[i];
+        const isCorrect = selected && selected.value === correctAnswer;
+        if (isCorrect) {
+            correctCount++;
+            li.classList.add('correct');
+            li.classList.remove('incorrect');
+            if (i <= 4) sec1++;
+            else if (i <= 8) sec2++;
+            else if (i <= 12) sec3++;
+            else if (i <= 16) sec4++;
+            else sec5++;
+        } else {
+            li.classList.add('incorrect');
+            li.classList.remove('correct');
         }
+    }
+    const score = (correctCount / 20) * 100;
+    const successRate = Math.round(score);
+    document.getElementById('res-total').textContent = `${Math.round(score)} / 100`;
+    document.getElementById('res-name').textContent = document.getElementById('studentName').value || (currentLang === 'ar' ? 'طالب' : 'Student');
+    document.getElementById('res-date').textContent = new Date().toLocaleDateString(currentLang === 'ar' ? 'ar-AE' : 'en-US');
+    document.getElementById('sec1-score').textContent = `${sec1}/4`;
+    document.getElementById('sec2-score').textContent = `${sec2}/4`;
+    document.getElementById('sec3-score').textContent = `${sec3}/4`;
+    document.getElementById('sec4-score').textContent = `${sec4}/4`;
+    document.getElementById('sec5-score').textContent = `${sec5}/4`;
+    const badge = document.getElementById('success-badge');
+    document.getElementById('success-percent').textContent = `${successRate}%`;
+    if (currentLang === 'ar') {
+        if (successRate >= 90) { badge.textContent = 'ممتاز'; badge.className = 'success-badge grade-excellent'; }
+        else if (successRate >= 75) { badge.textContent = 'جيد جداً'; badge.className = 'success-badge grade-good'; }
+        else if (successRate >= 50) { badge.textContent = 'جيد'; badge.className = 'success-badge grade-pass'; }
+        else { badge.textContent = 'يحتاج تحسين'; badge.className = 'success-badge grade-fail'; }
+    } else {
+        if (successRate >= 90) { badge.textContent = 'Excellent'; badge.className = 'success-badge grade-excellent'; }
+        else if (successRate >= 75) { badge.textContent = 'Very Good'; badge.className = 'success-badge grade-good'; }
+        else if (successRate >= 50) { badge.textContent = 'Good'; badge.className = 'success-badge grade-pass'; }
+        else { badge.textContent = 'Needs Improvement'; badge.className = 'success-badge grade-fail'; }
+    }
+    document.getElementById('results-panel').classList.remove('hidden');
+    document.getElementById('results-panel').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('sendEmailBtn').classList.remove('hidden');
+}
 
-        function sendResultsToEmail() {
-            const btn = document.getElementById('sendEmailBtn');
-            const status = document.getElementById('emailStatus');
-            btn.disabled = true;
-            btn.textContent = '⏳ جاري الإرسال...';
+function sendResultsToEmail() {
+    const btn = document.getElementById('sendEmailBtn');
+    const status = document.getElementById('emailStatus');
+    btn.disabled = true;
+    btn.textContent = currentLang === 'ar' ? '⏳ جاري الإرسال...' : '⏳ Sending...';
+    const name = document.getElementById('studentName').value || 'N/A';
+    const studentClass = document.getElementById('studentClass').value || 'N/A';
+    const date = document.querySelector('input[type="text"]').value || new Date().toLocaleDateString();
+    const score = document.getElementById('res-total').textContent;
+    const successRate = document.getElementById('success-percent').textContent;
+    const badge = document.getElementById('success-badge').textContent;
+    const sectionNames = {
+        ar: ['القدرة الكهربية الأساسية', 'فقد الطاقة والجهد العالي', 'الدايود والعناصر غير الأومية', 'ثنائيات LED وكفاءة الإضاءة', 'مسائل تطبيقية شاملة'],
+        en: ['Basic Electric Power', 'Heat Loss & High Voltage', 'Diodes & Non-Ohmic', 'LEDs & Lighting Efficiency', 'Comprehensive Applications']
+    };
+    const currentSectionNames = sectionNames[currentLang];
+    let answersHTML = `<div style="font-family: 'Segoe UI', Tahoma, Arial, sans-serif; direction: ${currentLang === 'ar' ? 'rtl' : 'ltr'};">
+        <div style="background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; padding: 20px; border-radius: 10px 10px 0 0; text-align: center;">
+            <h2 style="margin: 0; font-size: 22px;">⚡ ${currentLang === 'ar' ? 'نتيجة امتحان القدرة الكهربية والدايود' : 'Electric Power & Diodes Exam Result'}</h2>
+            <p style="margin: 5px 0 0 0; opacity: 0.9;">${currentLang === 'ar' ? 'الصف الثاني عشر المتقدم' : 'Grade 12 Advanced'}</p>
+            <p style="margin: 5px 0 0 0; font-size: 12px; opacity: 0.8;">🔀 ${currentLang === 'ar' ? 'تم خلط الأسئلة تلقائياً' : 'Questions were randomly shuffled'}</p>
+        </div>
+        <div style="background: #eef2ff; padding: 15px; border: 1px solid #c7d2fe;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr><td style="padding: 8px; font-weight: bold; color: #4338ca;">${currentLang === 'ar' ? '👤 الاسم:' : '👤 Name:'}</td><td style="padding: 8px;">${name}</td>
+                <td style="padding: 8px; font-weight: bold; color: #4338ca;">${currentLang === 'ar' ? '🏫 الشعبة:' : '🏫 Class:'}</td><td style="padding: 8px;">${studentClass}</td></tr>
+                <tr><td style="padding: 8px; font-weight: bold; color: #4338ca;">${currentLang === 'ar' ? '📅 التاريخ:' : '📅 Date:'}</td><td style="padding: 8px;">${date}</td>
+                <td style="padding: 8px; font-weight: bold; color: #4338ca;">${currentLang === 'ar' ? '🏆 التقدير:' : '🏆 Grade:'}</td><td style="padding: 8px;">${badge}</td></tr>
+            </table>
+        </div>
+        <div style="background: white; padding: 20px; text-align: center; border-bottom: 2px solid #e5e7eb;">
+            <div style="display: inline-block; margin: 0 15px;"><div style="font-size: 32px; font-weight: bold; color: #4f46e5;">${score}</div><div style="color: #6b7280; font-size: 13px;">${currentLang === 'ar' ? 'الدرجة الكلية' : 'Total Score'}</div></div>
+            <div style="display: inline-block; margin: 0 15px;"><div style="font-size: 32px; font-weight: bold; color: #059669;">${successRate}%</div><div style="color: #6b7280; font-size: 13px;">${currentLang === 'ar' ? 'نسبة النجاح' : 'Success Rate'}</div></div>
+        </div>
+        <h3 style="background: #f3f4f6; padding: 12px; margin: 0; color: #1f2937; border-bottom: 2px solid #d1d5db;">📝 ${currentLang === 'ar' ? 'تفاصيل الإجابات' : 'Answer Details'}</h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead><tr style="background: #4f46e5; color: white;">
+                <th style="padding: 10px; border: 1px solid #4338ca; width: 8%;">#</th>
+                <th style="padding: 10px; border: 1px solid #4338ca; width: 32%;">${currentLang === 'ar' ? 'القسم' : 'Section'}</th>
+                <th style="padding: 10px; border: 1px solid #4338ca; width: 15%;">${currentLang === 'ar' ? 'الإجابة' : 'Answer'}</th>
+                <th style="padding: 10px; border: 1px solid #4338ca; width: 15%;">${currentLang === 'ar' ? 'الصحيحة' : 'Correct'}</th>
+                <th style="padding: 10px; border: 1px solid #4338ca; width: 15%;">${currentLang === 'ar' ? 'النتيجة' : 'Status'}</th>
+            </tr></thead><tbody>`;
+    let sectionScores = [0, 0, 0, 0, 0];
+    let sectionTotals = [4, 4, 4, 4, 4];
+    for (let i = 1; i <= 20; i++) {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        const selectedValue = selected ? selected.value : '-';
+        const correctValue = correctAnswersMap[i];
+        const isCorrect = selectedValue === correctValue;
+        const sectionIndex = Math.floor((i - 1) / 4);
+        if (isCorrect) sectionScores[sectionIndex]++;
+        const rowBg = i % 2 === 0 ? '#f9fafb' : '#ffffff';
+        const statusBg = isCorrect ? '#dcfce7' : '#fee2e2';
+        const statusColor = isCorrect ? '#166534' : '#991b1b';
+        const statusIcon = isCorrect ? '✅' : '❌';
+        const statusText = isCorrect ? (currentLang === 'ar' ? 'صحيح' : 'Correct') : (currentLang === 'ar' ? 'خطأ' : 'Wrong');
+        answersHTML += `<tr style="background: ${rowBg};">
+            <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">${i}</td>
+            <td style="padding: 8px; border: 1px solid #e5e7eb;">${currentSectionNames[sectionIndex]}</td>
+            <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">${selectedValue.toUpperCase()}</td>
+            <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold; color: #059669;">${correctValue.toUpperCase()}</td>
+            <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; background: ${statusBg}; color: ${statusColor}; font-weight: bold;">${statusIcon} ${statusText}</td>
+        </tr>`;
+    }
+    answersHTML += `</tbody></table>
+        <h3 style="background: #f3f4f6; padding: 12px; margin: 0; color: #1f2937; border-bottom: 2px solid #d1d5db; border-top: 3px solid #4f46e5;">📊 ${currentLang === 'ar' ? 'تفصيل الأداء' : 'Performance Breakdown'}</h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead><tr style="background: #7c3aed; color: white;">
+                <th style="padding: 10px; border: 1px solid #6d28d9;">${currentLang === 'ar' ? 'القسم' : 'Section'}</th>
+                <th style="padding: 10px; border: 1px solid #6d28d9; width: 20%;">${currentLang === 'ar' ? 'النتيجة' : 'Score'}</th>
+                <th style="padding: 10px; border: 1px solid #6d28d9; width: 20%;">${currentLang === 'ar' ? 'النسبة' : 'Percentage'}</th>
+            </tr></thead><tbody>`;
+    for (let i = 0; i < 5; i++) {
+        const percentage = Math.round((sectionScores[i] / sectionTotals[i]) * 100);
+        const barColor = percentage >= 75 ? '#10b981' : percentage >= 50 ? '#f59e0b' : '#ef4444';
+        const rowBg = i % 2 === 0 ? '#f9fafb' : '#ffffff';
+        answersHTML += `<tr style="background: ${rowBg};">
+            <td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600;">${currentSectionNames[i]}</td>
+            <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold; color: #4f46e5;">${sectionScores[i]} / ${sectionTotals[i]}</td>
+            <td style="padding: 10px; border: 1px solid #e5e7eb;">
+                <div style="background: #e5e7eb; border-radius: 10px; overflow: hidden; height: 20px; position: relative;">
+                    <div style="background: ${barColor}; width: ${percentage}%; height: 100%;"></div>
+                    <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 11px; font-weight: bold; color: #1f2937;">${percentage}%</span>
+                </div>
+            </td>
+        </tr>`;
+    }
+    answersHTML += `</tbody></table>
+        <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 15px; border-radius: 0 0 10px 10px; border-top: 2px solid #f59e0b;">
+            <p style="margin: 0; color: #78350f; text-align: center; font-size: 13px;">⚡ <strong>${currentLang === 'ar' ? 'ملاحظة:' : 'Note:'}</strong> ${currentLang === 'ar' ? 'تم إرسال هذا التقرير تلقائياً من منصة 4U التعليمية | Mr. Mohammed Hesham' : 'This report was automatically sent from 4U Educational Platform | Mr. Mohammed Hesham'}</p>
+        </div></div>`;
+    const templateParams = {
+        to_email: "mohammedhesham872@gmail.com",
+        student_name: name,
+        student_class: studentClass,
+        exam_date: date,
+        total_score: score,
+        success_rate: successRate,
+        grade: badge,
+        answers_table: answersHTML
+    };
+    emailjs.send("service_w15m64i", "template_5b0u2tq", templateParams)
+        .then(() => {
+            status.textContent = currentLang === 'ar' ? '✅ تم إرسال النتائج بنجاح!' : '✅ Results sent successfully!';
+            status.style.color = '#059669';
+            btn.textContent = currentLang === 'ar' ? '✓ تم الإرسال' : '✓ Sent';
+        })
+        .catch(err => {
+            status.textContent = currentLang === 'ar' ? '❌ فشل الإرسال' : '❌ Failed to send';
+            status.style.color = '#dc2626';
+            btn.disabled = false;
+            btn.textContent = currentLang === 'ar' ? '📧 إعادة المحاولة' : '📧 Retry Send';
+            console.error('EmailJS Error:', err);
+        });
+}
 
-            const name = document.getElementById('studentName').value || 'N/A';
-            const date = document.querySelector('input[type="text"]').value || new Date().toLocaleDateString('ar-AE');
-            const score = document.getElementById('res-total').textContent;
-            const successRate = document.getElementById('success-percent').textContent;
-            const sec1 = document.getElementById('sec1-score').textContent;
-            const sec2 = document.getElementById('sec2-score').textContent;
-            const sec3 = document.getElementById('sec3-score').textContent;
-            const sec4 = document.getElementById('sec4-score').textContent;
-
-            let answersHTML = `<div dir="rtl" style="font-family: 'Cairo', sans-serif;">
-                <h3 style="color:#4F46E5;">📊 تفصيل الأداء:</h3>
-                <ul>
-                    <li>القدرة الكهربية وفقد الطاقة: ${sec1}</li>
-                    <li>نقل الطاقة بجهد عالي: ${sec2}</li>
-                    <li>الدايود والعناصر غير الأومية: ${sec3}</li>
-                    <li>ثنائيات LED وكفاءة الإضاءة: ${sec4}</li>
-                </ul>
-                <table style="border:1px solid #e5e7eb; border-collapse:collapse; width:100%; font-size:14px; direction: rtl;">
-                <tr style="background:#4F46E5; color:white;"><th style="border:1px solid #e5e7eb; padding:8px;">السؤال</th><th style="border:1px solid #e5e7eb; padding:8px;">الإجابة المختارة</th><th style="border:1px solid #e5e7eb; padding:8px;">الحالة</th></tr>`;
-            
-            const correctAnswers = ['b','a','a','d','c','a','c','b','b','b','b','c','b','b','c','a','b','c','b','c'];
-            
-            for(let i=1; i<=20; i++) {
-                const sel = document.querySelector(`input[name="q${i}"]:checked`);
-                const isCorrect = sel && sel.value === correctAnswers[i-1];
-                answersHTML += `<tr><td style="border:1px solid #e5e7eb; padding:6px;">${i}</td><td style="border:1px solid #e5e7eb; padding:6px;">${sel ? sel.value : '-'}</td><td style="border:1px solid #e5e7eb; padding:6px; color:${isCorrect ? 'green' : 'red'}">${isCorrect ? '✅ صحيح' : '❌ خطأ'}</td></tr>`;
-            }
-            answersHTML += '</table></div>';
-
-            const templateParams = {
-                to_email: TARGET_EMAIL,
-                student_name: name,
-                exam_date: date,
-                total_score: score,
-                success_rate: successRate,
-                answers_table: answersHTML
-            };
-
-            emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams)
-                .then(() => {
-                    status.textContent = '✅ تم الإرسال بنجاح! تحقق من Gmail.';
-                    status.style.color = '#059669';
-                    btn.textContent = '✓ تم الإرسال';
-                })
-                .catch(err => {
-                    status.textContent = '❌ فشل الإرسال. تحقق من الإعدادات.';
-                    status.style.color = '#dc2626';
-                    btn.disabled = false;
-                    btn.textContent = '📧 إعادة المحاولة';
-                    console.error('EmailJS Error:', err);
-                });
-        }
-
-        window.addEventListener('DOMContentLoaded', startTimer);
-    </script>
+window.addEventListener('DOMContentLoaded', () => {
+    prepareShuffledExam();
+    renderExam();
+    startTimer();
+    console.log('🔀 تم خلط الأسئلة والخيارات عشوائياً!');
+});
+</script>
 </body>
 </html>
